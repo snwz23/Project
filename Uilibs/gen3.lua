@@ -56,7 +56,7 @@ local aa, ab, ac, ad, ae, af, ag, ah, ai, aj, ak, al, am, b, c, d, e, f, g, h, i
 				export type Rayfield = k.Rayfield
 				type WindowModule = { new: (k.WindowProps) -> k.Window }
 				local l = {} :: Rayfield
-				local function m()
+				local function m(windowName)
 					-- Custom loading screen (StarsHub)
 					local TweenService = game:GetService("TweenService")
 					local Animation = true
@@ -116,7 +116,7 @@ local aa, ab, ac, ad, ae, af, ag, ah, ai, aj, ak, al, am, b, c, d, e, f, g, h, i
 						Size = UDim2.new(1, 0, 0.234, 0),
 						ZIndex = 2,
 						Font = Enum.Font.GothamBold,
-						Text = "Starting up! StarsHub",
+						Text = "Starting up! " .. tostring(windowName or "Rayfield"),
 						TextColor3 = Color3.new(1, 1, 1),
 						TextScaled = true,
 						TextSize = 14,
@@ -140,26 +140,22 @@ local aa, ab, ac, ad, ae, af, ag, ah, ai, aj, ak, al, am, b, c, d, e, f, g, h, i
 						TextTransparency = 1,
 					})
 
-					task.delay(1, function()
-						InitializingLabel.Parent = Frame
-						Tween(StartupLabel, { Position = UDim2.new(0.5, 0, 0.345, 0) }, 0.1)
-						Tween(InitializingLabel, { TextTransparency = 0 }, 0.1)
-						task.wait(3)
-						Tween(StartupLabel, { Position = UDim2.new(0.5, 0, 0.275, 0), TextTransparency = 1 }, 0.1)
-						Tween(InitializingLabel, { Position = UDim2.new(0.5, 0, 0.5, 0) }, 0.1)
-						task.wait(1)
-						local last = Tween(InitializingLabel, { TextTransparency = 1 }, 0.1)
-						if last then
-							last.Completed:Connect(function()
-								ScreenGui:Destroy()
-							end)
-						else
-							ScreenGui:Destroy()
-						end
-					end)
+					task.wait(1)
+					InitializingLabel.Parent = Frame
+					Tween(StartupLabel, { Position = UDim2.new(0.5, 0, 0.345, 0) }, 0.1)
+					Tween(InitializingLabel, { TextTransparency = 0 }, 0.1)
+					task.wait(3)
+					Tween(StartupLabel, { Position = UDim2.new(0.5, 0, 0.275, 0), TextTransparency = 1 }, 0.1)
+					Tween(InitializingLabel, { Position = UDim2.new(0.5, 0, 0.5, 0) }, 0.1)
+					task.wait(1)
+					local last = Tween(InitializingLabel, { TextTransparency = 1 }, 0.1)
+					if last then
+						last.Completed:Wait()
+					end
+					ScreenGui:Destroy()
+					-- Loading is finished and destroyed; returning lets CreateWindow build and show the GUI.
 
-					-- CreateWindow calls :Destroy() on the returned object after ~0.5s.
-					-- Return a dummy so the loading screen above plays out and removes itself.
+					-- CreateWindow calls :Destroy() on the returned object, so return a harmless dummy.
 					return Instance.new("Folder")
 				end
 				function l.CreateWindow(n, o: k.WindowProps): k.Window
@@ -182,7 +178,7 @@ local aa, ab, ac, ad, ae, af, ag, ah, ai, aj, ak, al, am, b, c, d, e, f, g, h, i
 							end
 						end)
 					end
-					local r, s, t = m(), pcall(function()
+					local r, s, t = m(if typeof(o) == "table" then (o.name or o.Name) else nil), pcall(function()
 						return (d(c.components.window) :: WindowModule).new(o)
 					end)
 					if not s then
@@ -10341,10 +10337,7 @@ function a(G)
 	}))
 	local K, L = l({ version = ac, envname = ad, shared = J, script = am, require = c }), H
 	local function M(N, ...)
-		local O, P, Q =
-			b(N),
-			"Attempted to call require with a non-ModuleScript",
-			"Attempted to call require with self"
+		local O, P, Q = b(N), "Attempted to call require with a non-ModuleScript", "Attempted to call require with self"
 		if O == "table" and z[N] then
 			if N.ClassName ~= "ModuleScript" then
 				ah(P, 2)
